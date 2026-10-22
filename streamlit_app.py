@@ -1,4 +1,6 @@
 import streamlit as st
+import os
+import base64
 
 # Page Configuration
 st.set_page_config(
@@ -25,6 +27,17 @@ st.markdown("""
         letter-spacing: 0.5px;
         box-shadow: 0 4px 15px rgba(124, 58, 237, 0.25);
         margin-bottom: 25px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 15px;
+    }
+    .profile-pic-banner {
+        width: 35px;
+        height: 35px;
+        border-radius: 50%;
+        border: 2px solid white;
+        object-fit: cover;
     }
     .title-text {
         font-size: 2.6rem;
@@ -33,6 +46,16 @@ st.markdown("""
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         margin-bottom: 5px;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+    .main-profile-pic {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        border: 3px solid #6d28d9;
+        object-fit: cover;
     }
     .sub-text {
         color: #6b7280;
@@ -64,15 +87,27 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
+# Function to encode image to base64
+def get_image_base64(path):
+    if os.path.exists(path):
+        with open(path, "rb") as image_file:
+            return base64.b64encode(image_file.read()).decode()
+    return None
+
+profile_image_b64 = get_image_base64("profile.png")
+profile_img_html_banner = f'<img src="data:image/png;base64,{profile_image_b64}" class="profile-pic-banner">' if profile_image_b64 else '🔮'
+profile_img_html_main = f'<img src="data:image/png;base64,{profile_image_b64}" class="main-profile-pic">' if profile_image_b64 else ''
+
 # Top Announcement Banner
-st.markdown("""
+st.markdown(f"""
     <div class="top-banner">
-        ✨ IQRA MAZHAR • CREATIVE AI STUDIO &nbsp;•&nbsp; ✉️ Contact: iqrach998@gmail.com
+        {profile_img_html_banner}
+        <span>✨ IQRA MAZHAR • CREATIVE AI STUDIO &nbsp;•&nbsp; ✉️ Contact: iqrach998@gmail.com</span>
     </div>
 """, unsafe_allow_html=True)
 
 # Header Section
-st.markdown("<h1 class='title-text'>🔮 Iqra Mazhar AI Studio & Toolkit</h1>", unsafe_allow_html=True)
+st.markdown(f"<h1 class='title-text'>{profile_img_html_main} 🔮 Iqra Mazhar AI Studio & Toolkit</h1>", unsafe_allow_html=True)
 st.markdown("<p class='sub-text'>Bespoke Generative AI Workflows, Prompt Engineering & Science Storytelling Tools</p>", unsafe_allow_html=True)
 
 st.divider()
