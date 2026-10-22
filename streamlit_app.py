@@ -1,151 +1,104 @@
 import streamlit as st
-import pandas as pd
-import math
-from pathlib import Path
 
-# Set the title and favicon that appear in the Browser's tab bar.
+# Page Configuration
 st.set_page_config(
-    page_title='GDP dashboard',
-    page_icon=':earth_americas:', # This is an emoji shortcode. Could be a URL too.
+    page_title="Iqra Mazhar - AI App Store",
+    page_icon="🤖",
+    layout="wide"
 )
 
-# -----------------------------------------------------------------------------
-# Declare some useful functions.
+# Custom Styling
+st.markdown("""
+    <style>
+    .main-title {
+        text-align: center;
+        font-size: 2.8rem;
+        font-weight: 700;
+        color: #1E293B;
+        margin-bottom: 0px;
+    }
+    .sub-title {
+        text-align: center;
+        font-size: 1.2rem;
+        color: #64748B;
+        margin-bottom: 30px;
+    }
+    .app-card {
+        background-color: #FFFFFF;
+        border-radius: 12px;
+        padding: 20px;
+        border: 1px solid #E2E8F0;
+        box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+        margin-bottom: 20px;
+    }
+    </style>
+""", unsafe_allow_html=True)
 
-@st.cache_data
-def get_gdp_data():
-    """Grab GDP data from a CSV file.
+# Header Section with Branding
+st.markdown("<h1 class='main-title'>🤖 Iqra Mazhar AI App Store</h1>", unsafe_allow_html=True)
+st.markdown("<p class='sub-title'>Your One-Stop Hub for Custom AI Tools & Automation Solutions</p>", unsafe_allow_html=True)
 
-    This uses caching to avoid having to read the file every time. If we were
-    reading from an HTTP endpoint instead of a file, it's a good idea to set
-    a maximum age to the cache with the TTL argument: @st.cache_data(ttl='1d')
-    """
+st.divider()
 
-    # Instead of a CSV on disk, you could read from an HTTP endpoint here too.
-    DATA_FILENAME = Path(__file__).parent/'data/gdp_data.csv'
-    raw_gdp_df = pd.read_csv(DATA_FILENAME)
+# Search and Filter
+col1, col2 = st.columns([3, 1])
+with col1:
+    search_query = st.text_input("🔍 Search AI Tools...", placeholder="Type tool name or keyword...")
+with col2:
+    category = st.selectbox("📁 Category", ["All Categories", "Content Creation", "Visuals & Design", "Data & Research", "Utilities"])
 
-    MIN_YEAR = 1960
-    MAX_YEAR = 2022
+st.markdown("### 🌟 Featured AI Tools")
 
-    # The data above has columns like:
-    # - Country Name
-    # - Country Code
-    # - [Stuff I don't care about]
-    # - GDP for 1960
-    # - GDP for 1961
-    # - GDP for 1962
-    # - ...
-    # - GDP for 2022
-    #
-    # ...but I want this instead:
-    # - Country Name
-    # - Country Code
-    # - Year
-    # - GDP
-    #
-    # So let's pivot all those year-columns into two: Year and GDP
-    gdp_df = raw_gdp_df.melt(
-        ['Country Code'],
-        [str(x) for x in range(MIN_YEAR, MAX_YEAR + 1)],
-        'Year',
-        'GDP',
-    )
-
-    # Convert years from string to integers
-    gdp_df['Year'] = pd.to_numeric(gdp_df['Year'])
-
-    return gdp_df
-
-gdp_df = get_gdp_data()
-
-# -----------------------------------------------------------------------------
-# Draw the actual page
-
-# Set the title that appears at the top of the page.
-'''
-# :earth_americas: GDP dashboard
-
-Browse GDP data from the [World Bank Open Data](https://data.worldbank.org/) website. As you'll
-notice, the data only goes to 2022 right now, and datapoints for certain years are often missing.
-But it's otherwise a great (and did I mention _free_?) source of data.
-'''
-
-# Add some spacing
-''
-''
-
-min_value = gdp_df['Year'].min()
-max_value = gdp_df['Year'].max()
-
-from_year, to_year = st.slider(
-    'Which years are you interested in?',
-    min_value=min_value,
-    max_value=max_value,
-    value=[min_value, max_value])
-
-countries = gdp_df['Country Code'].unique()
-
-if not len(countries):
-    st.warning("Select at least one country")
-
-selected_countries = st.multiselect(
-    'Which countries would you like to view?',
-    countries,
-    ['DEU', 'FRA', 'GBR', 'BRA', 'MEX', 'JPN'])
-
-''
-''
-''
-
-# Filter the data
-filtered_gdp_df = gdp_df[
-    (gdp_df['Country Code'].isin(selected_countries))
-    & (gdp_df['Year'] <= to_year)
-    & (from_year <= gdp_df['Year'])
+# Sample App Cards
+apps = [
+    {
+        "title": "🎬 AI Script Generator",
+        "category": "Content Creation",
+        "desc": "Generate high-engaging video scripts for YouTube and Social Media in seconds.",
+        "icon": "📝"
+    },
+    {
+        "title": "🎨 AI Visual Asset Prompt Craft",
+        "category": "Visuals & Design",
+        "desc": "Create perfect image generation prompts for Midjourney, DALL-E, and Leonardo AI.",
+        "icon": "🖼️"
+    },
+    {
+        "title": "📊 Science & History Research Assistant",
+        "category": "Data & Research",
+        "desc": "Synthesize scientific papers and historical data into concise video concepts.",
+        "icon": "🔬"
+    },
+    {
+        "title": "🚀 YouTube Analytics Predictor",
+        "category": "Utilities",
+        "desc": "Analyze views per hour and retention performance metrics for videos.",
+        "icon": "📈"
+    }
 ]
 
-st.header('GDP over time', divider='gray')
+# Display Cards in Grid
+cols = st.columns(2)
+for idx, app in enumerate(apps):
+    if category == "All Categories" or app["category"] == category:
+        if not search_query or search_query.lower() in app["title"].lower() or search_query.lower() in app["desc"].lower():
+            with cols[idx % 2]:
+                with st.container():
+                    st.markdown(f"""
+                    <div class='app-card'>
+                        <h3>{app['icon']} {app['title']}</h3>
+                        <p><b>Category:</b> {app['category']}</p>
+                        <p>{app['desc']}</p>
+                    </div>
+                    """, unsafe_allow_html=True)
+                    if st.button(f"Launch {app['title']}", key=f"btn_{idx}"):
+                        st.info(f"Opening {app['title']}... (API Configured)")
 
-''
+st.divider()
 
-st.line_chart(
-    filtered_gdp_df,
-    x='Year',
-    y='GDP',
-    color='Country Code',
-)
-
-''
-''
-
-
-first_year = gdp_df[gdp_df['Year'] == from_year]
-last_year = gdp_df[gdp_df['Year'] == to_year]
-
-st.header(f'GDP in {to_year}', divider='gray')
-
-''
-
-cols = st.columns(4)
-
-for i, country in enumerate(selected_countries):
-    col = cols[i % len(cols)]
-
-    with col:
-        first_gdp = first_year[first_year['Country Code'] == country]['GDP'].iat[0] / 1000000000
-        last_gdp = last_year[last_year['Country Code'] == country]['GDP'].iat[0] / 1000000000
-
-        if math.isnan(first_gdp):
-            growth = 'n/a'
-            delta_color = 'off'
-        else:
-            growth = f'{last_gdp / first_gdp:,.2f}x'
-            delta_color = 'normal'
-
-        st.metric(
-            label=f'{country} GDP',
-            value=f'{last_gdp:,.0f}B',
-            delta=growth,
-            delta_color=delta_color
-        )
+# Footer
+st.markdown("""
+    <div style='text-align: center; color: #94A3B8; font-size: 0.9rem;'>
+        Powered by Google AI Studio | Designed & Managed by <b>Iqra Mazhar</b>
+    </div>
+""", unsafe_allow_html=True)
